@@ -20,6 +20,9 @@ import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import Contact from './pages/Contact';
 import QuoteRequest from './pages/QuoteRequest';
+import Chat from './pages/Chat';
+import Payment from './pages/Payment';
+import NotFound from './pages/NotFound';
 
 // Auth Pages
 import Login from './pages/auth/Login';
@@ -27,11 +30,10 @@ import Register from './pages/auth/Register';
 import VerifyEmail from './pages/auth/VerifyEmail';
 
 // Dashboard Pages
-import UserDashboard from './pages/dashboard/UserDashboard';
-import AdminDashboard from './pages/dashboard/AdminDashboard';
+import Dashboard from './pages/dashboard/Dashboard';
 
 // Protected Route Component
-import ProtectedRoute from './components/auth/ProtectedRoute';
+import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
   return (
@@ -52,34 +54,43 @@ function App() {
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/quote" element={<QuoteRequest />} />
+                <Route path="/chat" element={
+                  <ProtectedRoute>
+                    <Chat />
+                  </ProtectedRoute>
+                } />
+                <Route path="/payment/:id" element={
+                  <ProtectedRoute>
+                    <Payment />
+                  </ProtectedRoute>
+                } />
 
                 {/* Auth Routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
 
-                {/* Protected User Routes */}
+                {/* Protected Routes */}
                 <Route
                   path="/dashboard/*"
                   element={
                     <ProtectedRoute>
-                      <UserDashboard />
+                      <Dashboard />
                     </ProtectedRoute>
                   }
                 />
 
-                {/* Protected Admin Routes */}
                 <Route
                   path="/admin/*"
                   element={
                     <ProtectedRoute adminOnly>
-                      <AdminDashboard />
+                      <Dashboard />
                     </ProtectedRoute>
                   }
                 />
 
                 {/* 404 Route */}
-                <Route path="*" element={<div className="flex items-center justify-center h-screen"><h1 className="text-4xl font-bold text-gray-800">404 - Page Not Found</h1></div>} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
 

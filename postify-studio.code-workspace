@@ -1,0 +1,67 @@
+{
+  "folders": [
+    {
+      "name": "🏠 Root",
+      "path": "."
+    },
+    {
+      "name": "🔧 Backend",
+      "path": "./backend"
+    },
+    {
+      "name": "🎨 Frontend",
+      "path": "./frontend"
+    }
+  ],
+  "settings": {
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "files.associations": {
+      "*.jsx": "javascriptreact",
+      "*.tsx": "typescriptreact"
+    },
+    "emmet.includeLanguages": {
+      "javascript": "javascriptreact",
+      "typescript": "typescriptreact"
+    },
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+      "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml",
+      "*.js": "$(capture).js.map, $(capture).min.js, $(capture).d.ts",
+      "*.jsx": "$(capture).js",
+      "*.ts": "$(capture).js, $(capture).d.ts.map, $(capture).d.ts, $(capture).js.map",
+      "*.tsx": "$(capture).ts, $(capture).js",
+      "README.md": "*.md"
+    },
+    "git.ignoreLimitWarning": true,
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/.git": true,
+      "**/.DS_Store": true
+    },
+    "files.exclude": {
+      "**/.DS_Store": true,
+      "**/node_modules": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "bradlc.vscode-tailwindcss",
+      "ms-vscode.vscode-json",
+      "ms-vscode.vscode-typescript-next",
+      "formulahendry.auto-rename-tag",
+      "christian-kohler.path-intellisense",
+      "ms-vscode.vscode-thunder-client",
+      "mongodb.mongodb-vscode",
+      "ms-vscode.vscode-node-azure-pack"
+    ]
+  }
+}
