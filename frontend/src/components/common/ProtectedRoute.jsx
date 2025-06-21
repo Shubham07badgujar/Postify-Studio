@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from './LoadingSpinner';
 
-const ProtectedRoute = ({ children, requiredRole = null }) => {
+const ProtectedRoute = ({ children, requiredRole = null, adminOnly = false }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -25,6 +25,13 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
     return <Navigate to="/verify-email" replace />;
   }
 
+  // Check for admin-only access
+  if (adminOnly && user.role !== 'admin') {
+    // Redirect to regular dashboard or home for non-admin users
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Check for specific required role
   if (requiredRole && user.role !== requiredRole) {
     // Redirect to unauthorized page or home
     return <Navigate to="/" replace />;

@@ -11,8 +11,10 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const { user, isAuthenticated } = useAuth();
-
+  const authContext = useAuth();
+  
+  // Safely destructure auth context
+  const { user = null, isAuthenticated = false } = authContext || {};
   useEffect(() => {
     if (isAuthenticated && user) {
       // Initialize socket connection
@@ -21,17 +23,34 @@ export const SocketProvider = ({ children }) => {
           userId: user.id,
           role: user.role,
         },
+        autoConnect: true,
+        forceNew: true,
+        transports: ['websocket', 'polling']
       });
 
       setSocket(newSocket);
 
-      // Join user-specific room
-      newSocket.emit('join-room', user.id);
+      // Connection event handlers
+      newSocket.on('connect', () => {
+        console.log('Socket connected successfully');
+        // Join user-specific room
+        newSocket.emit('join-room', user.id);
+        
+        // If user is admin, join admin room
+        if (user.role === 'admin') {
+          newSocket.emit('join-room', 'admin');
+        }
+      });
 
-      // If user is admin, join admin room
-      if (user.role === 'admin') {
-        newSocket.emit('join-room', 'admin');
-      }
+      // Handle connection errors gracefully
+      newSocket.on('connect_error', (error) => {
+        console.warn('Socket connection failed (backend may not be running):', error.message);
+        // Don't show error toast during development when backend is not running
+      });
+
+      newSocket.on('disconnect', () => {
+        console.log('Socket disconnected');
+      });
 
       // Listen for incoming messages
       newSocket.on('receive-message', (data) => {
@@ -54,19 +73,14 @@ export const SocketProvider = ({ children }) => {
         setOnlineUsers(prev => prev.filter(id => id !== userId));
       });
 
-      // Handle connection errors
-      newSocket.on('connect_error', (error) => {
-        console.error('Socket connection error:', error);
-        toast.error('Connection error. Please check your internet connection.');
-      });
-
       // Handle reconnection
       newSocket.on('reconnect', () => {
-        toast.success('Connection restored!');
+        console.log('Socket reconnected successfully');
       });
 
       // Cleanup on unmount
       return () => {
+        console.log('Cleaning up socket connection');
         newSocket.close();
       };
     } else {

@@ -269,7 +269,43 @@ Mobile-first responsive design with:
 - `POST /api/payments/create-payment-intent` - Create payment
 - `POST /api/payments/confirm-payment` - Confirm payment
 
-## 🚀 Deployment
+## � Email Configuration & Troubleshooting
+
+The application requires email configuration for user registration, notifications, and communication.
+
+### Quick Setup (Gmail)
+1. Enable 2-factor authentication on your Gmail account
+2. Generate an App Password: https://myaccount.google.com/apppasswords
+3. Update your backend `.env` file:
+```env
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-16-character-app-password
+```
+
+### Testing Email Configuration
+```bash
+# In the backend directory
+npm run test-email
+
+# Or on Windows, double-click:
+test-email.bat
+```
+
+### Troubleshooting
+- **Emails not sending?** Check the Email System Diagnostics in the Admin Dashboard
+- **Authentication failed?** Make sure you're using an App Password, not your regular password
+- **Need detailed help?** See `EMAIL_SETUP_GUIDE.md` for step-by-step instructions
+
+### Supported Email Providers
+- Gmail (recommended)
+- Outlook/Hotmail
+- Yahoo Mail
+- Custom SMTP servers
+- SendGrid, Mailgun, Amazon SES
+
+## �🚀 Deployment
 
 ### Backend Deployment
 1. Set up MongoDB Atlas or similar cloud database

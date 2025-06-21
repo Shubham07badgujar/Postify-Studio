@@ -3,7 +3,7 @@ const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { generateToken } = require('../utils/helpers');
-const { sendOTPEmail, sendWelcomeEmail } = require('../utils/emailService');
+const { sendOTPEmail, sendWelcomeEmail, sendAdminNotificationEmail } = require('../utils/emailService');
 const { protect } = require('../middleware/auth');
 
 const router = express.Router();
@@ -44,10 +44,14 @@ router.post('/register', [
     .optional()
     .trim()
     .isLength({ max: 100 })
-    .withMessage('Company name cannot exceed 100 characters')
+    .withMessage('Company name cannot exceed 100 characters'),
+  body('role')
+    .optional()
+    .isIn(['user', 'admin'])
+    .withMessage('Role must be either user or admin')
 ], handleValidationErrors, async (req, res) => {
   try {
-    const { name, email, password, phone, company } = req.body;
+    const { name, email, password, phone, company, role = 'user' } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -56,27 +60,38 @@ router.post('/register', [
         success: false,
         message: 'User already exists with this email'
       });
-    }
-
-    // Create user
+    }    // Create user
     const user = new User({
       name,
       email,
       password,
       phone,
-      company
+      company,
+      role
     });
 
     // Generate OTP
     const otp = user.generateOTP();
-    await user.save();
-
-    // Send OTP email
+    await user.save();    // Send OTP email
     try {
       await sendOTPEmail(email, otp, name);
     } catch (emailError) {
       console.error('Error sending OTP email:', emailError);
       // Don't fail registration if email fails
+    }
+
+    // Send admin notification (don't fail registration if this fails)
+    try {
+      await sendAdminNotificationEmail({
+        name,
+        email,
+        phone,
+        company,
+        role
+      });
+    } catch (emailError) {
+      console.error('Error sending admin notification:', emailError);
+      // Continue without failing
     }
 
     // Generate token

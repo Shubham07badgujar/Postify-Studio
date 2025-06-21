@@ -26,6 +26,7 @@ const authReducer = (state, action) => {
         error: null,
       };
     case 'LOGIN_SUCCESS':
+      console.log('AUTH: Login success, user data:', action.payload.user); // Debug log
       return {
         ...state,
         loading: false,
@@ -52,6 +53,7 @@ const authReducer = (state, action) => {
         error: null,
       };
     case 'UPDATE_USER':
+      console.log('AUTH: Update user, new data:', action.payload); // Debug log
       return {
         ...state,
         user: { ...state.user, ...action.payload },
@@ -124,11 +126,19 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: errorMessage };
     }
   };
-
   // Register function
-  const register = async (userData) => {
+  const register = async (name, email, password, phone = '', company = '', role = 'user') => {
     try {
       dispatch({ type: 'LOGIN_START' });
+      
+      const userData = {
+        name,
+        email,
+        password,
+        phone,
+        company,
+        role
+      };
       
       const response = await api.post('/auth/register', userData);
       
@@ -151,20 +161,20 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: errorMessage };
     }
   };
-
   // Verify email function
   const verifyEmail = async (otp) => {
     try {
       const response = await api.post('/auth/verify-email', { otp });
       
       if (response.data.success) {
+        // Update the user state with the verified user data
         dispatch({
           type: 'UPDATE_USER',
           payload: response.data.data.user,
         });
         
         toast.success('Email verified successfully!');
-        return { success: true };
+        return { success: true, user: response.data.data.user };
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Email verification failed';
@@ -188,13 +198,13 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: errorMessage };
     }
   };
-
   // Get current user function
   const getCurrentUser = async () => {
     try {
       const response = await api.get('/auth/me');
       
       if (response.data.success) {
+        console.log('Current user data:', response.data.data.user); // Debug log
         dispatch({
           type: 'LOGIN_SUCCESS',
           payload: {
@@ -204,6 +214,7 @@ export const AuthProvider = ({ children }) => {
         });
       }
     } catch (error) {
+      console.error('Get current user error:', error);
       // Token is invalid, logout
       logout();
     }

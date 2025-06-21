@@ -25,8 +25,12 @@ const Dashboard = () => {
     );
   }
 
-  // Check if user is admin
-  const isAdmin = user.role === 'admin' || user.isAdmin;
+  // Check if user is admin (only check role field)
+  const isAdmin = user.role === 'admin';
+
+  console.log('User data:', user); // Debug log
+  console.log('User role:', user.role); // Debug log
+  console.log('Is admin:', isAdmin); // Debug log
 
   return isAdmin ? <AdminDashboard /> : <UserDashboard />;
 };

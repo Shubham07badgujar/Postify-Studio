@@ -1,21 +1,67 @@
 const nodemailer = require('nodemailer');
 
-// Create reusable transporter
+// Validate email configuration
+const validateEmailConfig = () => {
+  const requiredVars = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASS'];
+  const missing = requiredVars.filter(varName => !process.env[varName]);
+  
+  if (missing.length > 0) {
+    console.error('Missing email configuration variables:', missing);
+    return false;
+  }
+  
+  return true;
+};
+
+// Create reusable transporter with better error handling
 const createTransporter = () => {
-  return nodemailer.createTransporter({
+  if (!validateEmailConfig()) {
+    throw new Error('Email configuration is incomplete. Please check your environment variables.');
+  }
+
+  const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: false, // true for 465, false for other ports
+    port: parseInt(process.env.EMAIL_PORT),
+    secure: process.env.EMAIL_PORT === '465', // true for 465, false for other ports
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
+    },
+    tls: {
+      rejectUnauthorized: false // Allow self-signed certificates
     }
   });
+
+  // Verify transporter configuration
+  transporter.verify((error, success) => {
+    if (error) {
+      console.error('Email transporter verification failed:', error);
+    } else {
+      console.log('Email server is ready to send messages');
+    }
+  });
+
+  return transporter;
+};
+
+// Test email configuration
+exports.testEmailConfiguration = async () => {
+  try {
+    const transporter = createTransporter();
+    await transporter.verify();
+    console.log('✅ Email configuration is valid');
+    return { success: true, message: 'Email configuration is valid' };
+  } catch (error) {
+    console.error('❌ Email configuration test failed:', error);
+    return { success: false, message: error.message, error };
+  }
 };
 
 // Send OTP email
 exports.sendOTPEmail = async (email, otp, name) => {
   try {
+    console.log(`📧 Attempting to send OTP email to: ${email}`);
+    
     const transporter = createTransporter();
 
     const mailOptions = {
@@ -80,10 +126,21 @@ exports.sendOTPEmail = async (email, otp, name) => {
       `
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log('OTP email sent successfully');
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ OTP email sent successfully:', result.messageId);
+    return { success: true, messageId: result.messageId };
   } catch (error) {
-    console.error('Error sending OTP email:', error);
+    console.error('❌ Error sending OTP email:', error);
+    
+    // More detailed error logging
+    if (error.code === 'EAUTH') {
+      console.error('Authentication failed. Check your EMAIL_USER and EMAIL_PASS credentials.');
+    } else if (error.code === 'ECONNECTION') {
+      console.error('Connection failed. Check your EMAIL_HOST and EMAIL_PORT settings.');
+    } else if (error.code === 'EMESSAGE') {
+      console.error('Message rejected. Check your email content and recipients.');
+    }
+    
     throw error;
   }
 };
@@ -91,6 +148,8 @@ exports.sendOTPEmail = async (email, otp, name) => {
 // Send welcome email after verification
 exports.sendWelcomeEmail = async (email, name) => {
   try {
+    console.log(`📧 Attempting to send welcome email to: ${email}`);
+    
     const transporter = createTransporter();
 
     const mailOptions = {
@@ -174,14 +233,14 @@ exports.sendWelcomeEmail = async (email, name) => {
             </div>
           </div>
         </body>
-        </html>
-      `
+        </html>      `
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log('Welcome email sent successfully');
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Welcome email sent successfully:', result.messageId);
+    return { success: true, messageId: result.messageId };
   } catch (error) {
-    console.error('Error sending welcome email:', error);
+    console.error('❌ Error sending welcome email:', error);
     throw error;
   }
 };
@@ -189,6 +248,8 @@ exports.sendWelcomeEmail = async (email, name) => {
 // Send quote submission notification
 exports.sendQuoteNotificationEmail = async (email, name, quoteId) => {
   try {
+    console.log(`📧 Attempting to send quote notification email to: ${email}`);
+    
     const transporter = createTransporter();
 
     const mailOptions = {
@@ -247,13 +308,13 @@ exports.sendQuoteNotificationEmail = async (email, name, quoteId) => {
           </div>
         </body>
         </html>
-      `
-    };
+      `    };
 
-    await transporter.sendMail(mailOptions);
-    console.log('Quote notification email sent successfully');
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Quote notification email sent successfully:', result.messageId);
+    return { success: true, messageId: result.messageId };
   } catch (error) {
-    console.error('Error sending quote notification email:', error);
+    console.error('❌ Error sending quote notification email:', error);
     throw error;
   }
 };
@@ -261,6 +322,8 @@ exports.sendQuoteNotificationEmail = async (email, name, quoteId) => {
 // Send payment confirmation email
 exports.sendPaymentConfirmationEmail = async (email, name, paymentDetails) => {
   try {
+    console.log(`📧 Attempting to send payment confirmation email to: ${email}`);
+    
     const transporter = createTransporter();
 
     const mailOptions = {
@@ -320,13 +383,77 @@ exports.sendPaymentConfirmationEmail = async (email, name, paymentDetails) => {
           </div>
         </body>
         </html>
+      `    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Payment confirmation email sent successfully:', result.messageId);
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('❌ Error sending payment confirmation email:', error);
+    throw error;
+  }
+};
+
+// Send email to admin when new user registers
+exports.sendAdminNotificationEmail = async (userDetails) => {
+  try {
+    console.log('📧 Attempting to send admin notification email');
+    
+    const transporter = createTransporter();
+    const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+
+    const mailOptions = {
+      from: `"Postify Studio" <${process.env.EMAIL_USER}>`,
+      to: adminEmail,
+      subject: 'New User Registration - Postify Studio',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .user-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px solid #e5e7eb; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>👤 New User Registration</h1>
+            </div>
+            <div class="content">
+              <h2>A new user has registered on Postify Studio!</h2>
+              
+              <div class="user-details">
+                <h3>User Details:</h3>
+                <p><strong>Name:</strong> ${userDetails.name}</p>
+                <p><strong>Email:</strong> ${userDetails.email}</p>
+                <p><strong>Phone:</strong> ${userDetails.phone || 'Not provided'}</p>
+                <p><strong>Company:</strong> ${userDetails.company || 'Not provided'}</p>
+                <p><strong>Role:</strong> ${userDetails.role}</p>
+                <p><strong>Registration Date:</strong> ${new Date().toLocaleDateString()}</p>
+              </div>
+              
+              <p>You can view and manage this user from the admin dashboard.</p>
+            </div>
+            <div class="footer">
+              <p>© 2025 Postify Studio. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log('Payment confirmation email sent successfully');
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Admin notification email sent successfully:', result.messageId);
+    return { success: true, messageId: result.messageId };
   } catch (error) {
-    console.error('Error sending payment confirmation email:', error);
+    console.error('❌ Error sending admin notification email:', error);
     throw error;
   }
 };

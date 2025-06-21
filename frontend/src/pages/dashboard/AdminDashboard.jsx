@@ -10,11 +10,12 @@ import {
 } from '@heroicons/react/24/outline';
 
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import EmailTester from '../../components/common/EmailTester';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
+  const { user, api } = useAuth();
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalQuotes: 0,
@@ -27,19 +28,43 @@ const AdminDashboard = () => {
   const [recentQuotes, setRecentQuotes] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Debug logs
+  console.log('AdminDashboard - User:', user);
+  console.log('AdminDashboard - User role:', user?.role);
+
   useEffect(() => {
     fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  }, []);  const fetchDashboardData = async () => {
     try {
+      setLoading(true);
+      
       const [statsRes, quotesRes] = await Promise.all([
-        axios.get('/api/admin/dashboard/stats'),
-        axios.get('/api/quotes?limit=5'),
+        api.get('/admin/dashboard/stats').catch(err => {
+          console.warn('Stats API failed:', err);
+          return { data: { success: false } };
+        }),
+        api.get('/quotes?limit=5').catch(err => {
+          console.warn('Quotes API failed:', err);
+          return { data: { success: false, quotes: [] } };
+        }),
       ]);
 
-      setStats(statsRes.data);
-      setRecentQuotes(quotesRes.data.quotes);
+      // Handle stats response
+      if (statsRes.data && statsRes.data.success) {
+        setStats(statsRes.data.data || statsRes.data);
+      } else {
+        console.warn('Stats data not available, using defaults');
+      }
+
+      // Handle quotes response - ensure we always have an array
+      if (quotesRes.data && quotesRes.data.success && quotesRes.data.quotes) {
+        setRecentQuotes(quotesRes.data.quotes);
+      } else if (quotesRes.data && Array.isArray(quotesRes.data.quotes)) {
+        setRecentQuotes(quotesRes.data.quotes);
+      } else {
+        console.warn('Quotes data not available, using empty array');
+        setRecentQuotes([]);
+      }
 
       setRecentActivity([
         {
@@ -69,6 +94,16 @@ const AdminDashboard = () => {
       ]);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      // Set default values on error
+      setRecentQuotes([]);
+      setStats({
+        totalUsers: 0,
+        totalQuotes: 0,
+        pendingQuotes: 0,
+        totalRevenue: 0,
+        activeProjects: 0,
+        blogPosts: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -125,9 +160,7 @@ const AdminDashboard = () => {
           <p className="mt-2 text-gray-600">
             Monitor your business performance and manage operations.
           </p>
-        </div>
-
-        {/* Stats Cards */}
+        </div>        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
           <StatCard icon={<UsersIcon className="h-6 w-6 text-blue-400" />} label="Total Users" value={stats.totalUsers} />
           <StatCard icon={<DocumentTextIcon className="h-6 w-6 text-yellow-400" />} label="Total Quotes" value={stats.totalQuotes} />
@@ -143,7 +176,10 @@ const AdminDashboard = () => {
 
           {/* Recent Activity */}
           <RecentActivity recentActivity={recentActivity} getActivityIcon={getActivityIcon} />
-        </div>
+        </div>        {/* Email System Diagnostics */}
+        {/* <div className="mt-8">
+          <EmailTester />
+        </div> */}
 
         {/* Quick Actions */}
         <QuickActions />
@@ -177,7 +213,7 @@ const RecentQuotes = ({ recentQuotes, getStatusColor }) => (
       <Link to="/admin/quotes" className="text-sm text-indigo-600 hover:text-indigo-500">View all</Link>
     </div>
     <div className="divide-y divide-gray-200">
-      {recentQuotes.length === 0 ? (
+      {!recentQuotes || recentQuotes.length === 0 ? (
         <div className="p-6 text-center text-gray-500">No recent quote requests.</div>
       ) : (
         recentQuotes.map((quote) => (
@@ -207,17 +243,21 @@ const RecentActivity = ({ recentActivity, getActivityIcon }) => (
       <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
     </div>
     <div className="divide-y divide-gray-200">
-      {recentActivity.map((activity) => (
-        <div key={activity.id} className="p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">{getActivityIcon(activity.type)}</div>
-            <div className="ml-3">
-              <p className="text-sm text-gray-900">{activity.message}</p>
-              <p className="text-xs text-gray-500">{activity.time}</p>
+      {!recentActivity || recentActivity.length === 0 ? (
+        <div className="p-6 text-center text-gray-500">No recent activity.</div>
+      ) : (
+        recentActivity.map((activity) => (
+          <div key={activity.id} className="p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">{getActivityIcon(activity.type)}</div>
+              <div className="ml-3">
+                <p className="text-sm text-gray-900">{activity.message}</p>
+                <p className="text-xs text-gray-500">{activity.time}</p>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   </div>
 );

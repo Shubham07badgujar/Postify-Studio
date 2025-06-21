@@ -10,6 +10,7 @@ import { SocketProvider } from './contexts/SocketContext';
 // Components
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
+import GetStarted from './components/common/GetStarted';
 
 // Pages
 import Home from './pages/Home';
@@ -53,7 +54,8 @@ function App() {
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/contact" element={<Contact />} />
-                <Route path="/quote" element={<QuoteRequest />} />
+                <Route path="/get-started" element={<GetStarted />} />
+                <Route path="/quote-request" element={<QuoteRequest />} />
                 <Route path="/chat" element={
                   <ProtectedRoute>
                     <Chat />
@@ -82,6 +84,25 @@ function App() {
 
                 <Route
                   path="/admin/*"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Single dashboard route that works for both admin and regular users */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/admin"
                   element={
                     <ProtectedRoute adminOnly>
                       <Dashboard />
