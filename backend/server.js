@@ -13,7 +13,7 @@ const server = createServer(app);
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     methods: ["GET", "POST"]
   }
 });
@@ -30,7 +30,7 @@ app.use(limiter);
 
 // CORS
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
   credentials: true
 }));
 

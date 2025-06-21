@@ -5,9 +5,10 @@ import {
   DocumentTextIcon,
   ChatBubbleLeftRightIcon,
   CurrencyDollarIcon,
-  TrendingUpIcon,
   EyeIcon,
+  ArrowTrendingUpIcon, // ✅ Correct import
 } from '@heroicons/react/24/outline';
+
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -39,8 +40,7 @@ const AdminDashboard = () => {
 
       setStats(statsRes.data);
       setRecentQuotes(quotesRes.data.quotes);
-      
-      // Mock recent activity - in real app, this would come from an activity log
+
       setRecentActivity([
         {
           id: 1,
@@ -129,251 +129,123 @@ const AdminDashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <UsersIcon className="h-6 w-6 text-blue-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Total Users
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {stats.totalUsers}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <DocumentTextIcon className="h-6 w-6 text-yellow-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Total Quotes
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {stats.totalQuotes}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <ChatBubbleLeftRightIcon className="h-6 w-6 text-red-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Pending Quotes
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {stats.pendingQuotes}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <CurrencyDollarIcon className="h-6 w-6 text-green-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Revenue
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      ${stats.totalRevenue?.toLocaleString() || 0}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <TrendingUpIcon className="h-6 w-6 text-purple-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Active Projects
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {stats.activeProjects}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <DocumentTextIcon className="h-6 w-6 text-indigo-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Blog Posts
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {stats.blogPosts}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
+          <StatCard icon={<UsersIcon className="h-6 w-6 text-blue-400" />} label="Total Users" value={stats.totalUsers} />
+          <StatCard icon={<DocumentTextIcon className="h-6 w-6 text-yellow-400" />} label="Total Quotes" value={stats.totalQuotes} />
+          <StatCard icon={<ChatBubbleLeftRightIcon className="h-6 w-6 text-red-400" />} label="Pending Quotes" value={stats.pendingQuotes} />
+          <StatCard icon={<CurrencyDollarIcon className="h-6 w-6 text-green-400" />} label="Revenue" value={`$${stats.totalRevenue?.toLocaleString() || 0}`} />
+          <StatCard icon={<ArrowTrendingUpIcon className="h-6 w-6 text-purple-400" />} label="Active Projects" value={stats.activeProjects} />
+          <StatCard icon={<DocumentTextIcon className="h-6 w-6 text-indigo-400" />} label="Blog Posts" value={stats.blogPosts} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Recent Quote Requests */}
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">
-                Recent Quote Requests
-              </h3>
-              <Link
-                to="/admin/quotes"
-                className="text-sm text-indigo-600 hover:text-indigo-500"
-              >
-                View all
-              </Link>
-            </div>
-            <div className="divide-y divide-gray-200">
-              {recentQuotes.length === 0 ? (
-                <div className="p-6 text-center text-gray-500">
-                  No recent quote requests.
-                </div>
-              ) : (
-                recentQuotes.map((quote) => (
-                  <div key={quote._id} className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-medium text-gray-900">
-                            {quote.projectType}
-                          </h4>
-                          <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
-                              quote.status
-                            )}`}
-                          >
-                            {quote.status.replace('_', ' ').toUpperCase()}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {quote.name} • {quote.budget}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date(quote.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+          <RecentQuotes recentQuotes={recentQuotes} getStatusColor={getStatusColor} />
 
           {/* Recent Activity */}
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">
-                Recent Activity
-              </h3>
-            </div>
-            <div className="divide-y divide-gray-200">
-              {recentActivity.map((activity) => (
-                <div key={activity.id} className="p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      {getActivityIcon(activity.type)}
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm text-gray-900">{activity.message}</p>
-                      <p className="text-xs text-gray-500">{activity.time}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <RecentActivity recentActivity={recentActivity} getActivityIcon={getActivityIcon} />
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-8 bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Quick Actions</h3>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Link
-                to="/admin/users"
-                className="block bg-blue-50 hover:bg-blue-100 p-4 rounded-lg text-center transition-colors"
-              >
-                <UsersIcon className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                <span className="text-sm font-medium text-blue-900">
-                  Manage Users
-                </span>
-              </Link>
-              <Link
-                to="/admin/quotes"
-                className="block bg-yellow-50 hover:bg-yellow-100 p-4 rounded-lg text-center transition-colors"
-              >
-                <DocumentTextIcon className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                <span className="text-sm font-medium text-yellow-900">
-                  Review Quotes
-                </span>
-              </Link>
-              <Link
-                to="/admin/blog"
-                className="block bg-purple-50 hover:bg-purple-100 p-4 rounded-lg text-center transition-colors"
-              >
-                <DocumentTextIcon className="h-8 w-8 text-purple-500 mx-auto mb-2" />
-                <span className="text-sm font-medium text-purple-900">
-                  Manage Blog
-                </span>
-              </Link>
-              <Link
-                to="/admin/analytics"
-                className="block bg-green-50 hover:bg-green-100 p-4 rounded-lg text-center transition-colors"
-              >
-                <TrendingUpIcon className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                <span className="text-sm font-medium text-green-900">
-                  View Analytics
-                </span>
-              </Link>
-            </div>
-          </div>
-        </div>
+        <QuickActions />
       </div>
     </div>
   );
 };
+
+// Extracted Components for Cleaner JSX
+
+const StatCard = ({ icon, label, value }) => (
+  <div className="bg-white overflow-hidden shadow rounded-lg">
+    <div className="p-5">
+      <div className="flex items-center">
+        <div className="flex-shrink-0">{icon}</div>
+        <div className="ml-5 w-0 flex-1">
+          <dl>
+            <dt className="text-sm font-medium text-gray-500 truncate">{label}</dt>
+            <dd className="text-lg font-medium text-gray-900">{value}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const RecentQuotes = ({ recentQuotes, getStatusColor }) => (
+  <div className="bg-white shadow rounded-lg">
+    <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <h3 className="text-lg font-medium text-gray-900">Recent Quote Requests</h3>
+      <Link to="/admin/quotes" className="text-sm text-indigo-600 hover:text-indigo-500">View all</Link>
+    </div>
+    <div className="divide-y divide-gray-200">
+      {recentQuotes.length === 0 ? (
+        <div className="p-6 text-center text-gray-500">No recent quote requests.</div>
+      ) : (
+        recentQuotes.map((quote) => (
+          <div key={quote._id} className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium text-gray-900">{quote.projectType}</h4>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(quote.status)}`}>
+                    {quote.status.replace('_', ' ').toUpperCase()}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">{quote.name} • {quote.budget}</p>
+                <p className="text-xs text-gray-500 mt-1">{new Date(quote.createdAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+);
+
+const RecentActivity = ({ recentActivity, getActivityIcon }) => (
+  <div className="bg-white shadow rounded-lg">
+    <div className="px-6 py-4 border-b border-gray-200">
+      <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
+    </div>
+    <div className="divide-y divide-gray-200">
+      {recentActivity.map((activity) => (
+        <div key={activity.id} className="p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">{getActivityIcon(activity.type)}</div>
+            <div className="ml-3">
+              <p className="text-sm text-gray-900">{activity.message}</p>
+              <p className="text-xs text-gray-500">{activity.time}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const QuickActions = () => (
+  <div className="mt-8 bg-white shadow rounded-lg">
+    <div className="px-6 py-4 border-b border-gray-200">
+      <h3 className="text-lg font-medium text-gray-900">Quick Actions</h3>
+    </div>
+    <div className="p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <QuickActionLink to="/admin/users" icon={<UsersIcon className="h-8 w-8 text-blue-500 mx-auto mb-2" />} label="Manage Users" bgColor="blue" />
+        <QuickActionLink to="/admin/quotes" icon={<DocumentTextIcon className="h-8 w-8 text-yellow-500 mx-auto mb-2" />} label="Review Quotes" bgColor="yellow" />
+        <QuickActionLink to="/admin/blog" icon={<DocumentTextIcon className="h-8 w-8 text-purple-500 mx-auto mb-2" />} label="Manage Blog" bgColor="purple" />
+        <QuickActionLink to="/admin/analytics" icon={<ArrowTrendingUpIcon className="h-8 w-8 text-green-500 mx-auto mb-2" />} label="View Analytics" bgColor="green" />
+      </div>
+    </div>
+  </div>
+);
+
+const QuickActionLink = ({ to, icon, label, bgColor }) => (
+  <Link
+    to={to}
+    className={`block bg-${bgColor}-50 hover:bg-${bgColor}-100 p-4 rounded-lg text-center transition-colors`}
+  >
+    {icon}
+    <span className={`text-sm font-medium text-${bgColor}-900`}>{label}</span>
+  </Link>
+);
 
 export default AdminDashboard;
